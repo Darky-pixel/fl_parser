@@ -1,0 +1,5 @@
+/.vscode
+/venv
+exp.py
+db.db
+chromedriver.exe
