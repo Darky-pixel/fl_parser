@@ -1,10 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import re
-import json
-import re
-import sqlite3
-import matplotlib
 
 URL = "https://www.fl.ru/projects/category/programmirovanie/?page={page}&kind=5"
 
@@ -13,7 +8,7 @@ HEADERS = {"user-agent":
 
 
 
-def find_page(session):
+def __find_page(session):
     pages = []
     current_page = 1
     while True:
@@ -27,7 +22,7 @@ def find_page(session):
 
 
 
-def pars_page(page):
+def __pars_page(page):
     soup = BeautifulSoup(page, "lxml")
     projects_list = soup.find("div", id="projects-list")
 
@@ -35,21 +30,17 @@ def pars_page(page):
     projects_body = list(map(lambda elm: elm.find_all("script", limit=2)[1].string.replace('document.write(\'<div class="b-post__body b-post__grid_descript b-post__body_overflow_hidden b-layuot_width_full"> <div class="b-post__txt ">', "").upper(),
                             projects_body))
 
-
     projects_head = projects_list.find_all("h2", class_="b-post__title b-post__grid_title p-0")
     projects_head = list(map(lambda elm : elm.text.upper(), projects_head))
 
     
-
     for i in range(len(projects_head)):
         projects_body[i] += projects_head[i]
 
     return projects_body
 
 
-
-
-if __name__ == "__main__":
+def main_pars():
 
     projects = []
 
@@ -73,58 +64,57 @@ if __name__ == "__main__":
     session = requests.session()
     session.post(URL.format(page=1), data=data)
     
-    pages = find_page(session)
-
-    # with open("index.html", encoding="utf-8") as file:
-    #     pages = list(file.read())
-
+    pages = __find_page(session)
 
     for i in pages:
-        projects += pars_page(i)
+        projects += __pars_page(i)
 
 
 
-    flask = 0
-    django = 0
-    telegram_bot = 0
-    instagram_bot = 0
-    vk_bot = 0
-    unknown_bot = 0
-    sql = 0
+    proj_prep = dict( # projects_prepared
+    flask = 0, 
+    django = 0,
+    telegram_bot = 0,
+    instagram_bot = 0,
+    vk_bot = 0,
+    unknown_bot = 0,
+    sql = 0,)
 
 
     for string in projects:
         if "SQL" in string:
-            sql += 1
+            proj_prep['sql'] += 1
 
         if "DJANGO" in string:
-            django += 1
+            proj_prep['django'] += 1
 
         elif "FLASK" in string:
-            flask += 1
+            proj_prep['flask'] += 1
 
         elif "БОТ" in string or "BOT" in string:
 
             if "TELEGRAM" in string or "ТЕЛЕГРАМ" in string:
-                telegram_bot += 1
+                proj_prep['telegram_bot'] += 1
 
             elif "INSTAGRAM" in string or "ИНСТАГРАМ" in string:
-                instagram_bot += 1
+                proj_prep['instagram_bot'] += 1
 
             elif "VK" in string or "ВК" in string:
-                vk_bot += 1
+                proj_prep['vk_bot'] += 1
 
             else:
-                unknown_bot += 1
+                proj_prep['unknown_bot'] += 1
 
 
 
     print(f"""--------------------
-Flask = {flask}
-Django = {django}
-Telegram bot = {telegram_bot}
-Instagram bot = {instagram_bot}
-Vk bot = {vk_bot}
-unknown bot = {unknown_bot}
-sql = {sql}
+Flask = {proj_prep['flask']}
+Django = {proj_prep['django']}
+Telegram bot = {proj_prep['telegram_bot']}
+Instagram bot = {proj_prep['instagram_bot']}
+Vk bot = {proj_prep['vk_bot']}
+unknown bot = {proj_prep['unknown_bot']}
+sql = {proj_prep['sql']}
 --------------------""")
+    del proj_prep['unknown_bot']
+    return proj_prep

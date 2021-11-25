@@ -1,5 +1,5 @@
 /.vscode
 /venv
-exp.py
-db.db
+*.db
 chromedriver.exe
+__pycache__
