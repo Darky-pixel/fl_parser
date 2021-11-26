@@ -1,5 +1,5 @@
 import db
-from pars import main_pars
+from asyn_pars import main_pars
 import draw
 
 import sys
@@ -29,8 +29,8 @@ if __name__ == "__main__":
             #FIXME
             pass
     except IndexError:
-        # projects = main_pars()
+        projects = main_pars()
         dbo = api_db()
-        # dbo.inset_data(projects)
+        dbo.inset_data(projects)
         dbo.f_draw()
         

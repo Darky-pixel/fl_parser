@@ -9,12 +9,14 @@ class Core(abc.ABC):
     def __init__(self, path_db):
         self.__base = sqlite3.connect(path_db)
         self.__cursor = self.__base.cursor()
+        self.__cursor.execute("PRAGMA foreign_keys = ON")
+        # https://stackoverflow.com/questions/7985645/on-delete-cascade-not-working-in-sqlite
 
     def __insert_state(self, id_count):
         self.__cursor.execute("INSERT INTO stats (date, id_count) VALUES (?, ?)", (datetime.date.today(), id_count))
 
     @abc.abstractmethod
-    def _inset(self, stat):
+    def inset(self, stat):
         stat = stat.items()
         stat_keys = tuple(map(lambda x: x[0], stat))
         stat_value = tuple(map(lambda x: x[1], stat))
@@ -31,14 +33,12 @@ class Core(abc.ABC):
         return self.__cursor.execute("""SELECT date, django, flask, telegram_bot, instagram_bot, vk_bot, sql
                                         FROM stats s JOIN count c ON s.id_count = c.id""").fetchall()
 
-    def _del_all_data(self):
-        #каскадное удаление работает но не здесь)
-        print('\ndel')
-        self.__cursor.execute("DELETE FROM stats")
+    def del_all_data(self):
+        print('del all data')
         self.__cursor.execute("DELETE FROM count")
 
     def __del__(self):
-        print("commit")
+        print("commit db")
         self.__base.commit()
 
 
@@ -47,8 +47,8 @@ class Main(Core):
     def __init__(self, path_db="db.db"):
         super().__init__(path_db=path_db)
 
-    def _inset(self, stat):
-        super()._inset(stat)
+    def inset(self, stat):
+        super().inset(stat)
     
     def select_stats_all_prep(self, last=False):
 
@@ -79,9 +79,11 @@ class Main(Core):
             res[date] = data
         return res
 
+    def del_all_data(self):
+        super().del_all_data()
 
 
 
 if __name__ == "__main__":
     term = Main(path_db="db_for_test.db")
-    term._del_all_data() 
+    term.del_all_data() 

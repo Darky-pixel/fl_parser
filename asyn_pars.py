@@ -63,8 +63,11 @@ def main_pars():
     
     pages = __find_pages(session)
 
+    j = 0
     projects = list()
     for i in pages:
+        j += 1
+        print(j)
         projects += __pars_page(i)
 
 
