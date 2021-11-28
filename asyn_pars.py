@@ -1,47 +1,15 @@
 from bs4 import BeautifulSoup
 import requests
+import aiohttp
+import asyncio
+import time
 
 URL = "https://www.fl.ru/projects/category/programmirovanie/?page={page}&kind=5"
 
 HEADERS = {"user-agent":
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36 OPR/77.0.4054.275"}
 
-
-
-def __find_pages(session):
-    pages = []
-    current_page = 1
-    while True:
-        pages.append(session.get(URL.format(page=current_page)))
-        print(f"page {current_page} status code is {pages[-1].status_code}")
-        current_page += 1
-        if pages[-1].status_code != 200:
-            pages = list(map(lambda elm:elm.text, pages[:-1]))
-            break
-    return pages
-
-
-
-def __pars_page(page):
-    soup = BeautifulSoup(page, "lxml")
-    projects_list = soup.find("div", id="projects-list")
-
-    projects_body = projects_list.find_all("div", class_="b-post__grid")
-    projects_body = list(map(lambda elm: elm.find_all("script", limit=2)[1].string.replace('document.write(\'<div class="b-post__body b-post__grid_descript b-post__body_overflow_hidden b-layuot_width_full"> <div class="b-post__txt ">', "").upper(),
-                            projects_body))
-
-    projects_head = projects_list.find_all("h2", class_="b-post__title b-post__grid_title p-0")
-    projects_head = list(map(lambda elm : elm.text.upper(), projects_head))
-
-    
-    for i in range(len(projects_head)):
-        projects_body[i] += projects_head[i]
-    return projects_body
-
-
-def main_pars():
-
-    data = {
+DATA = {
         'action': 'postfilter',
         'kind': '1',
         'pf_category': None,
@@ -58,20 +26,19 @@ def main_pars():
         'u_token_key': None,
     }
 
-    session = requests.session()
-    session.post(URL.format(page=1), data=data)
+
+async def find_pages():
+    async with aiohttp.ClientSession() as session:
+        # response = await session.get(url=URL.format(page=1), headers=HEADERS, data = DATA)
+        tasks = []
+
+
+
+def main_pars():
     
-    pages = __find_pages(session)
+    asyncio.run(find_pages())
 
-    j = 0
-    projects = list()
-    for i in pages:
-        j += 1
-        print(j)
-        projects += __pars_page(i)
-
-
-
+    '''
     proj_prep = dict( # projects_prepared
     flask = 0, 
     django = 0,
@@ -101,10 +68,10 @@ def main_pars():
                 proj_prep['instagram_bot'] += 1
 
             elif "VK" in string or "ВК" in string:
-                proj_prep['vk_bot'] += 1
+                proj_prep['vk_bot'] += 1 
 
-            else:
-                proj_prep['unknown_bot'] += 1
+            else: 
+                proj_prep['unknown_bot'] += 1 
 
 
 
@@ -121,3 +88,8 @@ sql = {proj_prep['sql']}
 """)
     del proj_prep['unknown_bot']
     return proj_prep
+
+    '''
+
+if __name__ == "__main__":
+    main_pars()

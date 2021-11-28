@@ -1,5 +1,5 @@
 import db
-from asyn_pars import main_pars
+from pars import main_pars
 import draw
 
 import sys

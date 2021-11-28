@@ -14,7 +14,7 @@ class Core(abc.ABC):
 
     def __insert_state(self, id_count):
         self.__cursor.execute("INSERT INTO stats (date, id_count) VALUES (?, ?)", (datetime.date.today(), id_count))
-
+   
     @abc.abstractmethod
     def inset(self, stat):
         stat = stat.items()
